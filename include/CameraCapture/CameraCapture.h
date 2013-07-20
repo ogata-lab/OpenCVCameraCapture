@@ -287,8 +287,8 @@ class CameraCapture
   // </rtc-template>
 
 
-  //CvCapture* m_pCapture;
-  cv::VideoCapture* m_pCapture;
+  CvCapture* m_pCapture;
+  //cv::VideoCapture* m_pCapture;
 };
 
 

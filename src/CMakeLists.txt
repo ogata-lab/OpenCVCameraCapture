@@ -37,7 +37,6 @@ link_directories(${OPENRTM_LIBRARY_DIRS})
 link_directories(${OMNIORB_LIBRARY_DIRS})
 link_directories(${OpenCV_LIB_DIR})
 
-message(${OpenCV_LIBS})
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${comp_srcs}
   ${comp_headers} ${ALL_IDL_SRCS})
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")

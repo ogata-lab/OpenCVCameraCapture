@@ -88,8 +88,8 @@ RTC::ReturnCode_t CameraCapture::onInitialize()
 
   if(m_pCapture == NULL) {
     std::cout << "[OpenCVCameraCapture] Capture From CAM" << std::endl;
-    //m_pCapture = cvCaptureFromCAM( 0 );
-    m_pCapture = new cv::VideoCapture(0);
+    m_pCapture = cvCaptureFromCAM( 0 );
+    //m_pCapture = new cv::VideoCapture(0);
     if(!m_pCapture) {
       std::cout << "[OpenCVCameraCapture] Failed Capture From CAM" << std::endl;
       return RTC::RTC_ERROR;
@@ -127,21 +127,26 @@ RTC::ReturnCode_t CameraCapture::onActivated(RTC::UniqueId ec_id)
   //cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
   //  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
 
-  /*
+  //cv::Mat mat;
+  //  *m_pCapture >> mat;
+
+ 
   IplImage* frame = cvQueryFrame(m_pCapture);
   if (frame == NULL) {
     std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
     return RTC::RTC_ERROR;
   }
+  /*
   if (m_width != frame->width || m_height != frame->height) {
     std::cerr << "[OpenCVCameraCapture] Invalid Width/Height setting." << std::endl;
     return RTC::RTC_ERROR;
-  }
+    }*/
+
   m_out.width = frame->width;
   m_out.height = frame->height;
   int len = frame->width * frame->height;
   m_out.pixels.length(frame->width * frame->height * frame->nChannels);
-  */
+
   return RTC::RTC_OK;
 }
 
@@ -156,14 +161,13 @@ RTC::ReturnCode_t CameraCapture::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
 {
-
-  /*
+  std::cout << "onExecute" << std::endl;
   IplImage* frame = cvQueryFrame(m_pCapture);
   if (frame == NULL) {
     std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
     return RTC::RTC_ERROR;
   }
-
+  std::cout << "Captured(" << frame->width << "x" << frame->height << "x" << frame->nChannels << ")" << std::endl;
   int len = frame->width* frame->height;
   m_out.width = frame->width;
   m_out.height = frame->height;
@@ -171,15 +175,17 @@ RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
   if (frame->origin == IPL_ORIGIN_TL) {
     memcpy((void*)&(m_out.pixels[0]), frame->imageData, len * frame->nChannels);
   } else {
+    std::cout << "Fliped" << std::endl;
     for (int i = 0;i < len;i++ ) {
+
       int index = i * frame->nChannels;
       for(int j = 0;j < frame->nChannels;j++) {
-	m_out.pixels[index + j] = frame->imageData[len*frame->nChannels - i - 1];
+	m_out.pixels[index + j] = frame->imageData[(len-i-1)*frame->nChannels +j];
       }
     }
   }
-  m_outOut.write();
-  */
+ m_outOut.write();
+
   return RTC::RTC_OK;
 }
 
