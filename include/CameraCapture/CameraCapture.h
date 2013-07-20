@@ -31,7 +31,7 @@
 
 using namespace RTC;
 
-#include <opencv2/core/core.hpp>
+//#include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 /*!
@@ -287,7 +287,8 @@ class CameraCapture
   // </rtc-template>
 
 
-  CvCapture* m_pCapture;
+  //CvCapture* m_pCapture;
+  cv::VideoCapture* m_pCapture;
 };
 
 

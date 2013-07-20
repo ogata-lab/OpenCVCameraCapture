@@ -85,6 +85,18 @@ RTC::ReturnCode_t CameraCapture::onInitialize()
 
 
   m_pCapture = NULL;
+
+  if(m_pCapture == NULL) {
+    std::cout << "[OpenCVCameraCapture] Capture From CAM" << std::endl;
+    //m_pCapture = cvCaptureFromCAM( 0 );
+    m_pCapture = new cv::VideoCapture(0);
+    if(!m_pCapture) {
+      std::cout << "[OpenCVCameraCapture] Failed Capture From CAM" << std::endl;
+      return RTC::RTC_ERROR;
+    }
+    std::cout << "[OpenCVCameraCapture] CAM Open Success" << std::endl;
+  }
+
   return RTC::RTC_OK;
 }
 
@@ -112,13 +124,10 @@ RTC::ReturnCode_t CameraCapture::onShutdown(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CameraCapture::onActivated(RTC::UniqueId ec_id)
 {
-  m_pCapture = cvCaptureFromCAM( 0 );
-  if(!m_pCapture) {
-    return RTC::RTC_ERROR;
-  }
-  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
-  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
+  //cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
+  //  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
 
+  /*
   IplImage* frame = cvQueryFrame(m_pCapture);
   if (frame == NULL) {
     std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
@@ -132,14 +141,14 @@ RTC::ReturnCode_t CameraCapture::onActivated(RTC::UniqueId ec_id)
   m_out.height = frame->height;
   int len = frame->width * frame->height;
   m_out.pixels.length(frame->width * frame->height * frame->nChannels);
-
+  */
   return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t CameraCapture::onDeactivated(RTC::UniqueId ec_id)
 {
-  cvReleaseCapture(&m_pCapture);
+  //cvReleaseCapture(&m_pCapture);
   m_pCapture = NULL;
   return RTC::RTC_OK;
 }
@@ -147,6 +156,8 @@ RTC::ReturnCode_t CameraCapture::onDeactivated(RTC::UniqueId ec_id)
 
 RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
 {
+
+  /*
   IplImage* frame = cvQueryFrame(m_pCapture);
   if (frame == NULL) {
     std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
@@ -154,6 +165,9 @@ RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
   }
 
   int len = frame->width* frame->height;
+  m_out.width = frame->width;
+  m_out.height = frame->height;
+  m_out.pixels.length(frame->width * frame->height * frame->nChannels);
   if (frame->origin == IPL_ORIGIN_TL) {
     memcpy((void*)&(m_out.pixels[0]), frame->imageData, len * frame->nChannels);
   } else {
@@ -165,6 +179,7 @@ RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
     }
   }
   m_outOut.write();
+  */
   return RTC::RTC_OK;
 }
 
