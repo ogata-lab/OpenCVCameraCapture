@@ -37,7 +37,7 @@ static const char* cameracapture_spec[] =
   };
 // </rtc-template>
 
-#include <cv.h>
+#include <opencv/cv.h>
 /*!
  * @brief constructor
  * @param manager Maneger Object
@@ -115,7 +115,7 @@ void CameraCapture::initCapture() {
   m_out.height = m_height;
   m_out.pixels.length(m_width * m_height * 3);
 
-  cvNamedWindow("Capture", CV_WINDOW_AUTOSIZE);
+  //cvNamedWindow("Capture", CV_WINDOW_AUTOSIZE);
 }
 
 
@@ -163,7 +163,7 @@ void CameraCapture::capture()
     std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
   }
   if (m_debug) {
-    cvShowImage("Capture", m_pFrame);
+    //cvShowImage("Capture", m_pFrame);
     cvWaitKey(1);
   }
 
@@ -188,7 +188,7 @@ void CameraCapture::finiCapture()
 {
   std::cout << "Finilize Capture..." << std::endl;
   cvReleaseCapture(&m_pCapture);
-  cvDestroyWindow("Capture");
+  //cvDestroyWindow("Capture");
 
 }
 

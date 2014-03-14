@@ -17,7 +17,7 @@ ADD_CUSTOM_TARGET (uninstall "${CMAKE_COMMAND}" -P
     "${PROJECT_BINARY_DIR}/uninstall_target.cmake")
 
 #option(BUILD_EXAMPLES "Build and install examples" OFF)
-option(BUILD_DOCUMENTATION "Build the documentation" ON)
+#option(BUILD_DOCUMENTATION "Build the documentation" ON)
 #option(BUILD_TESTS "Build the tests" OFF)
 #option(BUILD_TOOLS "Build the tools" OFF)
 option(BUILD_IDL "Build and install idl" ON)
@@ -55,13 +55,17 @@ else(${OpenRTM_FOUND})
 endif(${OpenRTM_FOUND})
 
 
-find_package(OpenCV)
+# find_package(OpenCV)
 
 # Universal settings
 #enable_testing()
 
 # Subdirectories
 add_subdirectory(cmake)
+
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+find_package(OpenCV)
+
 if(BUILD_DOCUMENTATION)
     add_subdirectory(doc)
 endif(BUILD_DOCUMENTATION)
