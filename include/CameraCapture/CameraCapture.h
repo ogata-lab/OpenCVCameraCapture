@@ -34,6 +34,8 @@ using namespace RTC;
 //#include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+//#include <cv.h>
+//#include <highgui.h>
 /*!
  * @class CameraCapture
  * @brief Camera Capture Component
@@ -82,7 +84,7 @@ class CameraCapture
    * 
    * 
    */
-  // virtual RTC::ReturnCode_t onFinalize();
+   virtual RTC::ReturnCode_t onFinalize();
 
   /***
    *
@@ -288,7 +290,17 @@ class CameraCapture
 
 
   CvCapture* m_pCapture;
+  IplImage* m_pFrame;
+  IplImage* m_pOutFrame;
   //cv::VideoCapture* m_pCapture;
+  bool m_alive, m_active;
+  int m_old_width, m_old_height;
+public:
+  void initCapture();
+  void finiCapture();
+  void capture();
+  bool isAlive() { return m_alive; };
+  bool isActive() { return m_active; };
 };
 
 

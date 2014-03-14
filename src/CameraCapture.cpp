@@ -37,6 +37,7 @@ static const char* cameracapture_spec[] =
   };
 // </rtc-template>
 
+#include <cv.h>
 /*!
  * @brief constructor
  * @param manager Maneger Object
@@ -82,30 +83,50 @@ RTC::ReturnCode_t CameraCapture::onInitialize()
   bindParameter("width", m_width, "320");
   bindParameter("height", m_height, "240");
   // </rtc-template>
+  
+  m_alive = true;
+  m_active = false;
 
+  //initCapture();
+  return RTC::RTC_OK;
 
+}
+
+void CameraCapture::initCapture() {
   m_pCapture = NULL;
 
   if(m_pCapture == NULL) {
     std::cout << "[OpenCVCameraCapture] Capture From CAM" << std::endl;
-    m_pCapture = cvCaptureFromCAM( 0 );
-    //m_pCapture = new cv::VideoCapture(0);
+    m_pCapture = cvCreateCameraCapture(0);
     if(!m_pCapture) {
       std::cout << "[OpenCVCameraCapture] Failed Capture From CAM" << std::endl;
-      return RTC::RTC_ERROR;
+      return;
     }
     std::cout << "[OpenCVCameraCapture] CAM Open Success" << std::endl;
   }
+  m_pOutFrame = cvCreateImage(cvSize(m_width, m_height), IPL_DEPTH_8U, 3);
 
-  return RTC::RTC_OK;
+  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
+  m_old_width = m_width;
+  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
+  m_old_height = m_height;
+
+  m_out.width = m_width;
+  m_out.height = m_height;
+  m_out.pixels.length(m_width * m_height * 3);
+
+  cvNamedWindow("Capture", CV_WINDOW_AUTOSIZE);
 }
 
-/*
+
 RTC::ReturnCode_t CameraCapture::onFinalize()
 {
+  m_alive = false;
+
+  //finiCapture();
   return RTC::RTC_OK;
 }
-*/
+
 
 /*
 RTC::ReturnCode_t CameraCapture::onStartup(RTC::UniqueId ec_id)
@@ -120,72 +141,68 @@ RTC::ReturnCode_t CameraCapture::onShutdown(RTC::UniqueId ec_id)
   return RTC::RTC_OK;
 }
 */
+void CameraCapture::capture()
+{
+  if (m_old_width != m_width || m_old_height != m_height) {
+    cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
+    m_old_width = m_width;
+    cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
+    m_old_height = m_height;
 
+    cvReleaseImage(&m_pOutFrame);
+    m_pOutFrame = cvCreateImage(cvSize(m_width, m_height), IPL_DEPTH_8U, 3);
+
+    m_out.width = m_width;
+    m_out.height = m_height;
+    m_out.pixels.length(m_width * m_height * 3);
+  }
+
+
+  m_pFrame = cvQueryFrame(m_pCapture);
+  if (m_pFrame == NULL) {
+    std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
+  }
+  if (m_debug) {
+    cvShowImage("Capture", m_pFrame);
+    cvWaitKey(1);
+  }
+
+  if (isActive()) {
+    int len = m_width * m_height * 3;
+
+    cvCvtColor(m_pFrame, m_pOutFrame, CV_BGRA2RGB);
+
+    memcpy((void*)&(m_out.pixels[0]), m_pOutFrame->imageData, len);// * m_pFrame->nChannels);
+    m_outOut.write();
+  }
+}
 
 RTC::ReturnCode_t CameraCapture::onActivated(RTC::UniqueId ec_id)
 {
-  //cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_WIDTH,  m_width);
-  //  cvSetCaptureProperty (m_pCapture, CV_CAP_PROP_FRAME_HEIGHT, m_height);
-
-  //cv::Mat mat;
-  //  *m_pCapture >> mat;
-
- 
-  IplImage* frame = cvQueryFrame(m_pCapture);
-  if (frame == NULL) {
-    std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
-    return RTC::RTC_ERROR;
-  }
-  /*
-  if (m_width != frame->width || m_height != frame->height) {
-    std::cerr << "[OpenCVCameraCapture] Invalid Width/Height setting." << std::endl;
-    return RTC::RTC_ERROR;
-    }*/
-
-  m_out.width = frame->width;
-  m_out.height = frame->height;
-  int len = frame->width * frame->height;
-  m_out.pixels.length(frame->width * frame->height * frame->nChannels);
-
+  m_active = true;
   return RTC::RTC_OK;
 }
 
 
+void CameraCapture::finiCapture()
+{
+  std::cout << "Finilize Capture..." << std::endl;
+  cvReleaseCapture(&m_pCapture);
+  cvDestroyWindow("Capture");
+
+}
+
 RTC::ReturnCode_t CameraCapture::onDeactivated(RTC::UniqueId ec_id)
 {
-  //cvReleaseCapture(&m_pCapture);
-  m_pCapture = NULL;
+  m_active = false;
   return RTC::RTC_OK;
 }
 
 
 RTC::ReturnCode_t CameraCapture::onExecute(RTC::UniqueId ec_id)
 {
-  std::cout << "onExecute" << std::endl;
-  IplImage* frame = cvQueryFrame(m_pCapture);
-  if (frame == NULL) {
-    std::cerr << "[OpenCVCameraCapture] Failed To Query Frame." << std::endl;
-    return RTC::RTC_ERROR;
-  }
-  std::cout << "Captured(" << frame->width << "x" << frame->height << "x" << frame->nChannels << ")" << std::endl;
-  int len = frame->width* frame->height;
-  m_out.width = frame->width;
-  m_out.height = frame->height;
-  m_out.pixels.length(frame->width * frame->height * frame->nChannels);
-  if (frame->origin == IPL_ORIGIN_TL) {
-    memcpy((void*)&(m_out.pixels[0]), frame->imageData, len * frame->nChannels);
-  } else {
-    std::cout << "Fliped" << std::endl;
-    for (int i = 0;i < len;i++ ) {
-
-      int index = i * frame->nChannels;
-      for(int j = 0;j < frame->nChannels;j++) {
-	m_out.pixels[index + j] = frame->imageData[(len-i-1)*frame->nChannels +j];
-      }
-    }
-  }
- m_outOut.write();
-
+  //std::cout << "onExecute" << std::endl;
+  //capture();
   return RTC::RTC_OK;
 }
 
